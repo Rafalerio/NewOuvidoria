@@ -1,3 +1,6 @@
+import entity.Admin;
+import entity.Usuario;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Scanner;
@@ -9,21 +12,22 @@ import java.util.Scanner;
  */
 public class SistemaFeedback {
 
-    private static GerenciadorFeedback gerenciadorFeedback = new GerenciadorFeedback();
-    private static UsuarioDAO usuarioDAO;
+    private static Gerenciador gerenciador = new Gerenciador();
+    private static Usuario usuario;
+    private static Admin admin;
     private static Scanner scanner = new Scanner(System.in);
     private static Connection conexao;
 
     public static void main(String[] args) {
-        try {
-            // Estabelece conexão com o banco de dados
-            conexao = ConexaoBancoDados.getConnection();
-            usuarioDAO = new UsuarioDAO(conexao);
-            System.out.println("Conectado ao banco de dados com sucesso.");
-        } catch (SQLException e) {
-            System.out.println("Erro ao conectar ao banco de dados: " + e.getMessage());
-            return;
-        }
+//        try {
+//            // Estabelece conexão com o banco de dados
+//            conexao = conexao.getConnection();
+//            usuario = new Usuario(conexao);
+//            System.out.println("Conectado ao banco de dados com sucesso.");
+//        } catch (SQLException e) {
+//            System.out.println("Erro ao conectar ao banco de dados: " + e.getMessage());
+//            return;
+//        }
 
         boolean execucao = true;
         while (execucao) {
@@ -115,7 +119,7 @@ public class SistemaFeedback {
                     if (nome.isEmpty() || departamento.isEmpty() || textoFeedback.isEmpty()) {
                         System.out.println("Todos os campos são obrigatórios. Tente novamente.");
                     } else {
-                        gerenciadorFeedback.registrarFeedback(nome, departamento, textoFeedback);
+                        gerenciador.registrarFeedback(nome, departamento, textoFeedback);
                         System.out.println("Feedback enviado com sucesso.");
                     }
                     break;
@@ -129,7 +133,7 @@ public class SistemaFeedback {
     }
 
     /**
-     * Processo de cadastro no banco via UsuarioDAO.
+     * Processo de cadastro no banco via Usuario.
      */
     private static void cadastrarUsuario() {
         System.out.print("Digite o nome de usuário: ");
@@ -138,7 +142,7 @@ public class SistemaFeedback {
             System.out.println("Usuário não pode ser vazio.");
             return;
         }
-        if (usuarioDAO.verificarUsuarioExistente(usuario)) {
+        if (usuario.verificarUsuarioExistente(usuario)) {
             System.out.println("Usuário já cadastrado. Tente outro nome.");
             return;
         }
@@ -150,15 +154,15 @@ public class SistemaFeedback {
             return;
         }
 
-        if (usuarioDAO.cadastrarUsuario(usuario, senha)) {
-            System.out.println("Cadastro realizado com sucesso.");
-        } else {
-            System.out.println("Erro no cadastro. Tente novamente.");
-        }
+//        if (usuario.cadastrarUsuario(usuario, senha)) {
+//            System.out.println("Cadastro realizado com sucesso.");
+//        } else {
+//            System.out.println("Erro no cadastro. Tente novamente.");
+//        }
     }
 
     /**
-     * Processo de login pelo banco via UsuarioDAO.
+     * Processo de login pelo banco via Usuario.
      * @return boolean true se login usuário válido
      */
     private static boolean loginUsuario() {
@@ -167,7 +171,7 @@ public class SistemaFeedback {
         System.out.print("Digite a senha: ");
         String senha = scanner.nextLine().trim();
 
-        if (usuarioDAO.loginUsuario(usuario, senha)) {
+        if (usuario.loginUsuario(usuario, senha)) {
             System.out.println("Login de usuário realizado com sucesso.");
             return true;
         } else {
@@ -185,7 +189,7 @@ public class SistemaFeedback {
         System.out.print("Digite a senha do administrador: ");
         String senha = scanner.nextLine().trim();
 
-        if (usuarioDAO.loginAdmin(usuario, senha)) {
+        if (usuario.loginAdmin(usuario, senha)) {
             menuAdminOperacoes();
         } else {
             System.out.println("Falha no login de administrador.");
@@ -235,7 +239,7 @@ public class SistemaFeedback {
 
     private static void listarFeedbacksAdmin() {
         System.out.println("\n--- Lista de Feedbacks (Ordem Cronológica Reversa) ---");
-        for (Feedback f : gerenciadorFeedback.listarFeedback()) {
+        for (Feedback f : gerenciador.listarFeedback()) {
             System.out.println(f.toString());
         }
     }
@@ -245,7 +249,7 @@ public class SistemaFeedback {
         String entrada = scanner.nextLine();
         try {
             int id = Integer.parseInt(entrada);
-            Feedback f = gerenciadorFeedback.buscarFeedbackPorId(id);
+            Feedback f = gerenciador.buscarFeedbackPorId(id);
             if (f != null) {
                 System.out.println(f.toString());
             } else {
@@ -261,7 +265,7 @@ public class SistemaFeedback {
         String entrada = scanner.nextLine();
         try {
             int id = Integer.parseInt(entrada);
-            Feedback f = gerenciadorFeedback.buscarFeedbackPorId(id);
+            Feedback f = gerenciador.buscarFeedbackPorId(id);
             if (f != null) {
                 System.out.println("Feedback atual: " + f.getTextoFeedback());
                 System.out.print("Digite o novo texto do feedback: ");
@@ -269,7 +273,7 @@ public class SistemaFeedback {
                 if (novoTexto.trim().isEmpty()) {
                     System.out.println("Texto inválido.");
                 } else {
-                    gerenciadorFeedback.atualizarFeedback(id, novoTexto);
+                    gerenciador.atualizarFeedback(id, novoTexto);
                     System.out.println("Feedback atualizado com sucesso.");
                 }
             } else {
@@ -285,9 +289,9 @@ public class SistemaFeedback {
         String entrada = scanner.nextLine();
         try {
             int id = Integer.parseInt(entrada);
-            Feedback f = gerenciadorFeedback.buscarFeedbackPorId(id);
+            Feedback f = gerenciador.buscarFeedbackPorId(id);
             if (f != null) {
-                gerenciadorFeedback.deletarFeedback(id);
+                gerenciador.deletarFeedback(id);
                 System.out.println("Feedback deletado com sucesso.");
             } else {
                 System.out.println("Feedback não encontrado.");
@@ -305,7 +309,7 @@ public class SistemaFeedback {
             return;
         }
         try {
-            gerenciadorFeedback.exportarFeedbackParaArquivo(nomeArquivo);
+            gerenciador.exportarFeedbackParaArquivo(nomeArquivo);
             System.out.println("Exportação realizada com sucesso para " + nomeArquivo);
         } catch (Exception e) {
             System.out.println("Erro na exportação: " + e.getMessage());
