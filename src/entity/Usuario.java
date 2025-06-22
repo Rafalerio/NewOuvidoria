@@ -3,11 +3,32 @@ package entity;
 public class Usuario {
     private int codigo;
     private String nome;
-    private String usuario;
+    private String usuario; // Nome de usuário para login
     private String email;
     private String senha;
     private String funcao;
     private String departamento;
+
+    // Construtor adicionado para facilitar a criação de objetos Usuario a partir do banco de dados ou para login
+    public Usuario() {
+        // Construtor padrão
+    }
+
+    // Construtor para cadastro com todos os campos (exceto código, que é gerado pelo banco)
+    public Usuario(String nome, String usuario, String email, String senha, String funcao, String departamento) {
+        this.nome = nome;
+        this.usuario = usuario;
+        this.email = email;
+        this.senha = senha;
+        this.funcao = funcao;
+        this.departamento = departamento;
+    }
+
+    // Construtor para login, focando em usuário e senha
+    public Usuario(String usuario, String senha) {
+        this.usuario = usuario;
+        this.senha = senha;
+    }
 
     /**
      * Encapsulamento
@@ -69,4 +90,3 @@ public class Usuario {
         this.departamento = departamento;
     }
 }
-

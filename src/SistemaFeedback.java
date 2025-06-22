@@ -1,7 +1,7 @@
 import entity.Admin;
 import entity.Usuario;
 import conexao.Conexao;
-
+import dao.UsuarioDAO; // Importar a classe UsuarioDAO
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Scanner;
@@ -14,16 +14,24 @@ import java.util.Scanner;
 public class SistemaFeedback {
 
     private static Gerenciador gerenciador = new Gerenciador();
-    private static Usuario usuario;
-    private static Admin admin;
+    private static UsuarioDAO usuarioDAO = new UsuarioDAO(); // Instância de UsuarioDAO
     private static Scanner scanner = new Scanner(System.in);
     private static Connection conexao;
+    private static Usuario usuarioLogado; // Armazena o usuário logado atualmente
+
+    // Credenciais fixas do administrador
+    private static final String ADMIN_LOGIN = "admin123";
+    private static final String ADMIN_SENHA = "admin321";
 
     public static void main(String[] args) throws SQLException {
         // Estabelece conexão com o banco de dados
-        conexao = conexao;
-        usuario = new Usuario();
-        System.out.println("Conectado ao banco de dados com sucesso.");
+        conexao = Conexao.getConexao(); // Chamar o método getConexao para obter a conexão
+        if (conexao != null) {
+            System.out.println("Conectado ao banco de dados com sucesso.");
+        } else {
+            System.out.println("Falha ao conectar ao banco de dados.");
+            return; // Encerrar se não houver conexão
+        }
 
         boolean execucao = true;
         while (execucao) {
@@ -52,8 +60,10 @@ public class SistemaFeedback {
         }
 
         try {
+            // Fechar a conexão ao sair do sistema
             if (conexao != null && !conexao.isClosed()) {
                 conexao.close();
+                System.out.println("Conexão com o banco de dados fechada.");
             }
         } catch (SQLException e) {
             System.out.println("Erro ao fechar conexão: " + e.getMessage());
@@ -77,12 +87,11 @@ public class SistemaFeedback {
                 case "1":
                     cadastrarUsuario();
                     break;
-//                case "2":
-//                    if (loginUsuario()) {
-//                        // Usuário logado, permite enviar feedback
-//                        menuEnviarFeedback();
-//                    }
-//                    break;
+                case "2":
+                    if (loginUsuario()) {
+                        menuEnviarFeedback();
+                    }
+                    break;
                 case "3":
                     sair = true;
                     break;
@@ -96,9 +105,15 @@ public class SistemaFeedback {
      * Menu para envio de feedback após usuário estar logado.
      */
     private static void menuEnviarFeedback() {
+        if (usuarioLogado == null) {
+            System.out.println("Nenhum usuário logado. Por favor, faça login primeiro.");
+            return;
+        }
+
         boolean sair = false;
         while (!sair) {
             System.out.println("\n--- Menu Feedback ---");
+            System.out.println("Usuário logado: " + usuarioLogado.getUsuario()); // Mostra o usuário logado
             System.out.println("1. Enviar feedback");
             System.out.println("2. Sair");
             System.out.print("Escolha sua opção: ");
@@ -121,6 +136,8 @@ public class SistemaFeedback {
                     break;
                 case "2":
                     sair = true;
+                    usuarioLogado = null; // Desloga o usuário ao sair
+                    System.out.println("Você foi desconectado.");
                     break;
                 default:
                     System.out.println("Opção inválida. Tente novamente.");
@@ -129,19 +146,34 @@ public class SistemaFeedback {
     }
 
     /**
-     * Processo de cadastro no banco via Usuario.
+     * Processo de cadastro no banco via UsuarioDAO.
      */
     private static void cadastrarUsuario() {
-        System.out.print("Digite o nome de usuário: ");
-        String usuario = scanner.nextLine().trim();
-        if (usuario.isEmpty()) {
-            System.out.println("Usuário não pode ser vazio.");
+        System.out.print("Digite o nome completo: ");
+        String nomeCompleto = scanner.nextLine().trim();
+        if (nomeCompleto.isEmpty()) {
+            System.out.println("Nome completo não pode ser vazio.");
             return;
         }
-//        if (usuario.verificarUsuarioExistente(usuario)) {
-//            System.out.println("Usuário já cadastrado. Tente outro nome.");
-//            return;
-//        }
+
+        System.out.print("Digite o nome de usuário (login): ");
+        String login = scanner.nextLine().trim();
+        if (login.isEmpty()) {
+            System.out.println("Nome de usuário (login) não pode ser vazio.");
+            return;
+        }
+
+        if (usuarioDAO.verificarUsuarioExistente(login)) {
+            System.out.println("Usuário já cadastrado. Tente outro nome de usuário.");
+            return;
+        }
+
+        System.out.print("Digite o email: ");
+        String email = scanner.nextLine().trim();
+        if (email.isEmpty()) {
+            System.out.println("Email não pode ser vazio.");
+            return;
+        }
 
         System.out.print("Digite a senha: ");
         String senha = scanner.nextLine().trim();
@@ -150,46 +182,68 @@ public class SistemaFeedback {
             return;
         }
 
-//        if (usuario.cadastrarUsuario(usuario, senha)) {
-//            System.out.println("Cadastro realizado com sucesso.");
-//        } else {
-//            System.out.println("Erro no cadastro. Tente novamente.");
-//        }
+        System.out.print("Digite a função (ex: funcionário, gestor): ");
+        String funcao = scanner.nextLine().trim();
+        if (funcao.isEmpty()) {
+            System.out.println("Função não pode ser vazia.");
+            return;
+        }
+
+        System.out.print("Digite o departamento: ");
+        String departamento = scanner.nextLine().trim();
+        if (departamento.isEmpty()) {
+            System.out.println("Departamento não pode ser vazio.");
+            return;
+        }
+
+        Usuario novoUsuario = new Usuario(nomeCompleto, login, email, senha, funcao, departamento);
+
+        usuarioDAO.cadastrarUsuario(novoUsuario);
+        System.out.println("Cadastro realizado com sucesso.");
+    }
+
+
+    /**
+     * Processo de login pelo banco via UsuarioDAO.
+     * @return boolean true se login usuário válido
+     */
+    private static boolean loginUsuario() {
+        System.out.print("Digite o nome de usuário: ");
+        String login = scanner.nextLine().trim();
+        System.out.print("Digite a senha: ");
+        String senha = scanner.nextLine().trim();
+
+        Usuario credenciais = new Usuario(login, senha);
+
+        Usuario usuarioAutenticado = usuarioDAO.loginUsuario(credenciais);
+
+        if (usuarioAutenticado != null) {
+            usuarioLogado = usuarioAutenticado;
+            System.out.println("Login de usuário realizado com sucesso. Bem-vindo, " + usuarioLogado.getNome() + "!");
+            return true;
+        } else {
+            System.out.println("Usuário ou senha incorretos.");
+            return false;
+        }
     }
 
     /**
-     * Processo de login pelo banco via Usuario.
-     * @return boolean true se login usuário válido
-     */
-//    private static boolean loginUsuario() {
-//        System.out.print("Digite o nome de usuário: ");
-//        String usuario = scanner.nextLine().trim();
-//        System.out.print("Digite a senha: ");
-//        String senha = scanner.nextLine().trim();
-//
-////        if (usuario.loginUsuario(usuario, senha)) {
-////            System.out.println("Login de usuário realizado com sucesso.");
-////            return true;
-////        } else {
-////            System.out.println("Usuário ou senha incorretos.");
-////            return false;
-////        }
-//    }
-
-    /**
-     * Menu e login do administrador.
+     * Menu e login do administrador com credenciais fixas.
+     * [Mudança]: Agora verifica credenciais fixas "admin123" e "admin321".
      */
     private static void menuAdmin() {
         System.out.print("Digite o nome de usuário do administrador: ");
-        String usuario = scanner.nextLine().trim();
+        String usuarioAdmin = scanner.nextLine().trim();
         System.out.print("Digite a senha do administrador: ");
-        String senha = scanner.nextLine().trim();
+        String senhaAdmin = scanner.nextLine().trim();
 
-//        if (usuario.loginAdmin(usuario, senha)) {
-//            menuAdminOperacoes();
-//        } else {
-//            System.out.println("Falha no login de administrador.");
-//        }
+        // [Mudança]: Verificação das credenciais fixas
+        if (usuarioAdmin.equals(ADMIN_LOGIN) && senhaAdmin.equals(ADMIN_SENHA)) {
+            System.out.println("Login de administrador realizado com sucesso.");
+            menuAdminOperacoes();
+        } else {
+            System.out.println("Falha no login de administrador. Verifique as credenciais.");
+        }
     }
 
     /**
@@ -235,6 +289,10 @@ public class SistemaFeedback {
 
     private static void listarFeedbacksAdmin() {
         System.out.println("\n--- Lista de Feedbacks (Ordem Cronológica Reversa) ---");
+        if (gerenciador.listarFeedback().isEmpty()) {
+            System.out.println("Nenhum feedback registrado.");
+            return;
+        }
         for (Feedback f : gerenciador.listarFeedback()) {
             System.out.println(f.toString());
         }
@@ -252,7 +310,7 @@ public class SistemaFeedback {
                 System.out.println("Feedback não encontrado.");
             }
         } catch (NumberFormatException e) {
-            System.out.println("ID inválido.");
+            System.out.println("ID inválido. Por favor, digite um número inteiro.");
         }
     }
 
@@ -267,7 +325,7 @@ public class SistemaFeedback {
                 System.out.print("Digite o novo texto do feedback: ");
                 String novoTexto = scanner.nextLine();
                 if (novoTexto.trim().isEmpty()) {
-                    System.out.println("Texto inválido.");
+                    System.out.println("O novo texto do feedback não pode ser vazio.");
                 } else {
                     gerenciador.atualizarFeedback(id, novoTexto);
                     System.out.println("Feedback atualizado com sucesso.");
@@ -276,7 +334,7 @@ public class SistemaFeedback {
                 System.out.println("Feedback não encontrado.");
             }
         } catch (NumberFormatException e) {
-            System.out.println("ID inválido.");
+            System.out.println("ID inválido. Por favor, digite um número inteiro.");
         }
     }
 
@@ -293,7 +351,7 @@ public class SistemaFeedback {
                 System.out.println("Feedback não encontrado.");
             }
         } catch (NumberFormatException e) {
-            System.out.println("ID inválido.");
+            System.out.println("ID inválido. Por favor, digite um número inteiro.");
         }
     }
 
@@ -301,7 +359,7 @@ public class SistemaFeedback {
         System.out.print("Digite o nome do arquivo para exportação (exemplo: feedbacks.txt): ");
         String nomeArquivo = scanner.nextLine().trim();
         if (nomeArquivo.isEmpty()) {
-            System.out.println("Nome de arquivo inválido.");
+            System.out.println("Nome de arquivo inválido. Não pode ser vazio.");
             return;
         }
         try {
@@ -309,7 +367,7 @@ public class SistemaFeedback {
             System.out.println("Exportação realizada com sucesso para " + nomeArquivo);
         } catch (Exception e) {
             System.out.println("Erro na exportação: " + e.getMessage());
+            e.printStackTrace(); // Para depuração
         }
     }
 }
-

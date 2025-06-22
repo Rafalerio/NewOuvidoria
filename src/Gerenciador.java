@@ -1,48 +1,23 @@
-import java.util.Stack;
-import java.util.ArrayList;
-import java.util.List;
+// No Gerenciador.java, dentro do método exportarFeedbackParaArquivo
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+// ...
 
-public class Gerenciador {
-    private Stack<Feedback> pilhaFeedback = new Stack<>();
-    private List<Feedback> listaFeedback = new ArrayList<>();
-    private int contadorFeedback = 1;
-
-    public void registrarFeedback(String nome, String departamento, String textoFeedback) {
-        Feedback feedback = new Feedback(contadorFeedback++, nome, departamento, textoFeedback);
-        pilhaFeedback.push(feedback);
-        listaFeedback.add(feedback);
-    }
-
-    public List<Feedback> listarFeedback() {
-        List<Feedback> listaReversa = new ArrayList<>(pilhaFeedback);
-        return listaReversa;
-    }
-
-    public Feedback buscarFeedbackPorId(int id) {
-        for (Feedback feedback : listaFeedback) {
-            if (feedback.getId() == id) {
-                return feedback;
+public void exportarFeedbackParaArquivo(String nomeArquivo) throws IOException {
+    try (PrintWriter writer = new PrintWriter(new FileWriter(nomeArquivo))) {
+        writer.println("--- Relatório de Feedbacks ---");
+        writer.println("Data de Exportação: " + LocalDateTime.now());
+        writer.println("-----------------------------");
+        if (listaFeedback.isEmpty()) {
+            writer.println("Nenhum feedback registrado.");
+        } else {
+            // Exporta em ordem cronológica (a ordem da listaFeedback)
+            for (Feedback feedback : listaFeedback) {
+                writer.println(feedback.toString());
             }
         }
-        return null;
-    }
-
-    public void atualizarFeedback(int id, String novoTextoFeedback) {
-        Feedback feedback = buscarFeedbackPorId(id);
-        if (feedback != null) {
-            listaFeedback.remove(feedback);
-            listaFeedback.add(new Feedback(feedback.getId(), feedback.getNome(), feedback.getDepartamento(), novoTextoFeedback));
-        }
-    }
-
-    public void deletarFeedback(int id) {
-        Feedback feedback = buscarFeedbackPorId(id);
-        if (feedback != null) {
-            listaFeedback.remove(feedback);
-        }
-    }
-
-    public void exportarFeedbackParaArquivo(String nomeArquivo) {
-        // Implementar lógica de exportação para arquivo aqui
+        writer.println("-----------------------------");
+        System.out.println("Feedbacks exportados para " + nomeArquivo);
     }
 }
