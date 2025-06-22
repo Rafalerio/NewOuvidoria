@@ -2,7 +2,6 @@
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-// ...
 
 public void exportarFeedbackParaArquivo(String nomeArquivo) throws IOException {
     try (PrintWriter writer = new PrintWriter(new FileWriter(nomeArquivo))) {
