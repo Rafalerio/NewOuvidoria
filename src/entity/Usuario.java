@@ -21,7 +21,7 @@ public class Usuario {
         this.codigo = codigo;
     }
 
-    public String getNome(){
+    public String getNome() {
         return nome;
     }
 
@@ -64,7 +64,9 @@ public class Usuario {
     public String getDepartamento(){
         return departamento;
     }
-    public void setDepartamento(String departamento){
+
+    public void setDepartamento(String departamento) {
         this.departamento = departamento;
     }
+}
 

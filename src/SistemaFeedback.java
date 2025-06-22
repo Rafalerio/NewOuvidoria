@@ -1,5 +1,6 @@
 import entity.Admin;
 import entity.Usuario;
+import conexao.Conexao;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -18,16 +19,11 @@ public class SistemaFeedback {
     private static Scanner scanner = new Scanner(System.in);
     private static Connection conexao;
 
-    public static void main(String[] args) {
-//        try {
-//            // Estabelece conexão com o banco de dados
-//            conexao = conexao.getConnection();
-//            usuario = new Usuario(conexao);
-//            System.out.println("Conectado ao banco de dados com sucesso.");
-//        } catch (SQLException e) {
-//            System.out.println("Erro ao conectar ao banco de dados: " + e.getMessage());
-//            return;
-//        }
+    public static void main(String[] args) throws SQLException {
+        // Estabelece conexão com o banco de dados
+        conexao = conexao;
+        usuario = new Usuario();
+        System.out.println("Conectado ao banco de dados com sucesso.");
 
         boolean execucao = true;
         while (execucao) {
@@ -81,12 +77,12 @@ public class SistemaFeedback {
                 case "1":
                     cadastrarUsuario();
                     break;
-                case "2":
-                    if (loginUsuario()) {
-                        // Usuário logado, permite enviar feedback
-                        menuEnviarFeedback();
-                    }
-                    break;
+//                case "2":
+//                    if (loginUsuario()) {
+//                        // Usuário logado, permite enviar feedback
+//                        menuEnviarFeedback();
+//                    }
+//                    break;
                 case "3":
                     sair = true;
                     break;
@@ -142,10 +138,10 @@ public class SistemaFeedback {
             System.out.println("Usuário não pode ser vazio.");
             return;
         }
-        if (usuario.verificarUsuarioExistente(usuario)) {
-            System.out.println("Usuário já cadastrado. Tente outro nome.");
-            return;
-        }
+//        if (usuario.verificarUsuarioExistente(usuario)) {
+//            System.out.println("Usuário já cadastrado. Tente outro nome.");
+//            return;
+//        }
 
         System.out.print("Digite a senha: ");
         String senha = scanner.nextLine().trim();
@@ -165,20 +161,20 @@ public class SistemaFeedback {
      * Processo de login pelo banco via Usuario.
      * @return boolean true se login usuário válido
      */
-    private static boolean loginUsuario() {
-        System.out.print("Digite o nome de usuário: ");
-        String usuario = scanner.nextLine().trim();
-        System.out.print("Digite a senha: ");
-        String senha = scanner.nextLine().trim();
-
-        if (usuario.loginUsuario(usuario, senha)) {
-            System.out.println("Login de usuário realizado com sucesso.");
-            return true;
-        } else {
-            System.out.println("Usuário ou senha incorretos.");
-            return false;
-        }
-    }
+//    private static boolean loginUsuario() {
+//        System.out.print("Digite o nome de usuário: ");
+//        String usuario = scanner.nextLine().trim();
+//        System.out.print("Digite a senha: ");
+//        String senha = scanner.nextLine().trim();
+//
+////        if (usuario.loginUsuario(usuario, senha)) {
+////            System.out.println("Login de usuário realizado com sucesso.");
+////            return true;
+////        } else {
+////            System.out.println("Usuário ou senha incorretos.");
+////            return false;
+////        }
+//    }
 
     /**
      * Menu e login do administrador.
@@ -189,11 +185,11 @@ public class SistemaFeedback {
         System.out.print("Digite a senha do administrador: ");
         String senha = scanner.nextLine().trim();
 
-        if (usuario.loginAdmin(usuario, senha)) {
-            menuAdminOperacoes();
-        } else {
-            System.out.println("Falha no login de administrador.");
-        }
+//        if (usuario.loginAdmin(usuario, senha)) {
+//            menuAdminOperacoes();
+//        } else {
+//            System.out.println("Falha no login de administrador.");
+//        }
     }
 
     /**

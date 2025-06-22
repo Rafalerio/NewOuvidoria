@@ -21,13 +21,13 @@ public class UsuarioDAO {
         PreparedStatement ps = null;
 
         try {
-            ps = Conexao.getConexao().preparedStatement(sql);
-            ps.setString(parameterIndex:1, usuario.getNome());
-            ps.setString(parameterIndex:2, usuario.getUsuario());
-            ps.setString(parameterIndex:3, usuario.getSenha());
-            ps.setString(parameterIndex:4, usuario.getEmail());
-            ps.setString(parameterIndex:5, usuario.getFuncao());
-            ps.setString(parameterIndex:6, usuario.getDepartamento());
+            ps = Conexao.getConexao().prepareStatement(sql);
+            ps.setString(1, usuario.getNome());
+            ps.setString(2, usuario.getUsuario());
+            ps.setString(3, usuario.getSenha());
+            ps.setString(4, usuario.getEmail());
+            ps.setString(5, usuario.getFuncao());
+            ps.setString(6, usuario.getDepartamento());
 
             ps.execute();
             ps.close();
