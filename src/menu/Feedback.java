@@ -1,3 +1,5 @@
+package menu;
+
 import java.time.LocalDateTime;
 
 public class Feedback {
@@ -15,12 +17,25 @@ public class Feedback {
         this.dataHora = LocalDateTime.now();
     }
 
+    public Feedback(int id, String nome, String departamento, String textoFeedback, LocalDateTime dataHora) {
+        this.id = id;
+        this.nome = nome;
+        this.departamento = departamento;
+        this.textoFeedback = textoFeedback;
+        this.dataHora = dataHora; // Usa a data/hora do banco
+    }
+
     // Métodos getters e toString
     public int getId() { return id; }
     public String getNome() { return nome; }
     public String getDepartamento() { return departamento; }
     public String getTextoFeedback() { return textoFeedback; }
     public LocalDateTime getDataHora() { return dataHora; }
+
+    // --- Setter para o ID ---
+    public void setId(int id) {
+        this.id = id;
+    }
 
     @Override
     public String toString() {

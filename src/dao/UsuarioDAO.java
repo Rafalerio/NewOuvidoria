@@ -83,7 +83,7 @@ public class UsuarioDAO {
      * @return O objeto Usuario completo se o login for bem-sucedido, null caso contrário.
      */
     public Usuario loginUsuario(Usuario usuario) {
-        String sql = "SELECT CODIGO, NOME, LOGIN, EMAIL, FUNCAO, DEPARTAMENTO FROM USUARIO WHERE LOGIN = ? AND SENHA = ?";
+        String sql = "SELECT NOME, LOGIN, EMAIL, FUNCAO, DEPARTAMENTO FROM USUARIO WHERE LOGIN = ? AND SENHA = ?";
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
@@ -95,7 +95,6 @@ public class UsuarioDAO {
             if (rs.next()) {
                 // Se encontrou, preenche o objeto Usuario com os dados do banco
                 Usuario loggedInUser = new Usuario();
-                loggedInUser.setCodigo(rs.getInt("CODIGO"));
                 loggedInUser.setNome(rs.getString("NOME"));
                 loggedInUser.setUsuario(rs.getString("LOGIN"));
                 loggedInUser.setEmail(rs.getString("EMAIL"));
@@ -123,11 +122,7 @@ public class UsuarioDAO {
      * @return true se o login do administrador for bem-sucedido, false caso contrário.
      */
     public boolean loginAdmin(Admin admin) {
-        // Assumindo que administradores também estão na tabela USUARIO e possuem uma 'FUNCAO' específica,
-        // ou que há uma tabela ADMIN separada. Se for na mesma tabela USUARIO, o SQL seria:
         String sql = "SELECT COUNT(*) FROM USUARIO WHERE LOGIN = ? AND SENHA = ? AND FUNCAO = 'administrador'";
-        // Se houver uma tabela ADMIN separada com (USUARIO, SENHA), o SQL seria:
-        // String sql = "SELECT COUNT(*) FROM ADMIN WHERE USUARIO = ? AND SENHA = ?";
 
         PreparedStatement ps = null;
         ResultSet rs = null;

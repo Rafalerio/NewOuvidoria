@@ -1,4 +1,6 @@
-//package entity;
+//Teste para conexão e atribuição de dados no DB
+//
+// package entity;
 //
 //import dao.UsuarioDAO;
 //

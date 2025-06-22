@@ -1,10 +1,16 @@
-import entity.Admin;
+package menu;
+
 import entity.Usuario;
 import conexao.Conexao;
-import dao.UsuarioDAO; // Importar a classe UsuarioDAO
+import dao.UsuarioDAO;
+import dao.FeedbackDAO;
+import menu.Gerenciador;
+import menu.Feedback;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Scanner;
+import java.util.List;
+import java.io.IOException;
 
 /**
  * Classe principal do sistema de feedback.
@@ -35,7 +41,7 @@ public class SistemaFeedback {
 
         boolean execucao = true;
         while (execucao) {
-            System.out.println("\n=== Sistema de Feedback ===");
+            System.out.println("\n=== Sistema de menu.Feedback ===");
             System.out.println("Selecione o papel:");
             System.out.println("1. Usuário");
             System.out.println("2. Administrador");
@@ -67,8 +73,10 @@ public class SistemaFeedback {
             }
         } catch (SQLException e) {
             System.out.println("Erro ao fechar conexão: " + e.getMessage());
+            e.printStackTrace();
         }
     }
+
 
     /**
      * Menu principal para o usuário com opções de cadastro, login e enviar feedback.
@@ -112,7 +120,7 @@ public class SistemaFeedback {
 
         boolean sair = false;
         while (!sair) {
-            System.out.println("\n--- Menu Feedback ---");
+            System.out.println("\n--- Menu menu.Feedback ---");
             System.out.println("Usuário logado: " + usuarioLogado.getUsuario()); // Mostra o usuário logado
             System.out.println("1. Enviar feedback");
             System.out.println("2. Sair");
@@ -131,7 +139,6 @@ public class SistemaFeedback {
                         System.out.println("Todos os campos são obrigatórios. Tente novamente.");
                     } else {
                         gerenciador.registrarFeedback(nome, departamento, textoFeedback);
-                        System.out.println("Feedback enviado com sucesso.");
                     }
                     break;
                 case "2":
@@ -229,7 +236,6 @@ public class SistemaFeedback {
 
     /**
      * Menu e login do administrador com credenciais fixas.
-     * [Mudança]: Agora verifica credenciais fixas "admin123" e "admin321".
      */
     private static void menuAdmin() {
         System.out.print("Digite o nome de usuário do administrador: ");
@@ -237,7 +243,7 @@ public class SistemaFeedback {
         System.out.print("Digite a senha do administrador: ");
         String senhaAdmin = scanner.nextLine().trim();
 
-        // [Mudança]: Verificação das credenciais fixas
+        //Verificação das credenciais fixas
         if (usuarioAdmin.equals(ADMIN_LOGIN) && senhaAdmin.equals(ADMIN_SENHA)) {
             System.out.println("Login de administrador realizado com sucesso.");
             menuAdminOperacoes();
@@ -288,12 +294,13 @@ public class SistemaFeedback {
     }
 
     private static void listarFeedbacksAdmin() {
-        System.out.println("\n--- Lista de Feedbacks (Ordem Cronológica Reversa) ---");
-        if (gerenciador.listarFeedback().isEmpty()) {
+        System.out.println("\n--- Lista de Feedbacks (Mais Recente Primeiro) ---");
+        List<menu.Feedback> feedbacks = gerenciador.listarFeedback();
+        if (feedbacks.isEmpty()) {
             System.out.println("Nenhum feedback registrado.");
             return;
         }
-        for (Feedback f : gerenciador.listarFeedback()) {
+        for (menu.Feedback f : feedbacks) {
             System.out.println(f.toString());
         }
     }
@@ -303,7 +310,7 @@ public class SistemaFeedback {
         String entrada = scanner.nextLine();
         try {
             int id = Integer.parseInt(entrada);
-            Feedback f = gerenciador.buscarFeedbackPorId(id);
+            menu.Feedback f = gerenciador.buscarFeedbackPorId(id);
             if (f != null) {
                 System.out.println(f.toString());
             } else {
@@ -319,7 +326,7 @@ public class SistemaFeedback {
         String entrada = scanner.nextLine();
         try {
             int id = Integer.parseInt(entrada);
-            Feedback f = gerenciador.buscarFeedbackPorId(id);
+            menu.Feedback f = gerenciador.buscarFeedbackPorId(id);
             if (f != null) {
                 System.out.println("Feedback atual: " + f.getTextoFeedback());
                 System.out.print("Digite o novo texto do feedback: ");
@@ -328,7 +335,6 @@ public class SistemaFeedback {
                     System.out.println("O novo texto do feedback não pode ser vazio.");
                 } else {
                     gerenciador.atualizarFeedback(id, novoTexto);
-                    System.out.println("Feedback atualizado com sucesso.");
                 }
             } else {
                 System.out.println("Feedback não encontrado.");
@@ -343,10 +349,9 @@ public class SistemaFeedback {
         String entrada = scanner.nextLine();
         try {
             int id = Integer.parseInt(entrada);
-            Feedback f = gerenciador.buscarFeedbackPorId(id);
+            menu.Feedback f = gerenciador.buscarFeedbackPorId(id);
             if (f != null) {
                 gerenciador.deletarFeedback(id);
-                System.out.println("Feedback deletado com sucesso.");
             } else {
                 System.out.println("Feedback não encontrado.");
             }
@@ -365,9 +370,9 @@ public class SistemaFeedback {
         try {
             gerenciador.exportarFeedbackParaArquivo(nomeArquivo);
             System.out.println("Exportação realizada com sucesso para " + nomeArquivo);
-        } catch (Exception e) {
+        } catch (IOException e) {
             System.out.println("Erro na exportação: " + e.getMessage());
-            e.printStackTrace(); // Para depuração
+            e.printStackTrace(); // Imprime o stack trace para depuração
         }
     }
 }
