@@ -3,7 +3,7 @@ package entity;
 public class Usuario {
     private int codigo;
     private String nome;
-    private String usuario; // Nome de usuário para login
+    private String usuario;
     private String email;
     private String senha;
     private String funcao;
@@ -30,9 +30,7 @@ public class Usuario {
         this.senha = senha;
     }
 
-    /**
-     * Encapsulamento
-     */
+    // Encapsulamento
 
     public String getNome() {
         return nome;

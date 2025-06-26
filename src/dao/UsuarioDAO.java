@@ -1,8 +1,9 @@
 package dao;
 
 import entity.Usuario;
-import entity.Admin; // Importar a classe Admin
+import entity.Admin;
 import conexao.Conexao;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet; // Importar ResultSet
 import java.sql.SQLException;
@@ -13,11 +14,11 @@ import java.sql.SQLException;
 
 public class UsuarioDAO {
 
-    /**
-     * Método de inserção de dados para cadastrar um novo usuário.
-     */
+
+    // Método de inserção de dados para cadastrar um novo usuário.
+
     public void cadastrarUsuario(Usuario usuario) {
-        // Ajuste no SQL: o campo EMAIL e FUNCAO estavam trocados nas posições (3 e 4)
+
         String sql = "INSERT INTO USUARIO (NOME, LOGIN, EMAIL, SENHA, FUNCAO, DEPARTAMENTO) VALUES (?, ?, ?, ?, ?, ?)";
 
         PreparedStatement ps = null;
