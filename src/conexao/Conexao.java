@@ -9,7 +9,7 @@ import java.sql.SQLException;
  */
 
 public class Conexao {
-    private static final String url = "jdbc:mysql://localhost:3306/newouvidoria";
+    private static final String url = "jdbc:mysql://127.0.0.1:3306/newouvidoria";
     private static final String user = "Rafalerio";
     private static final String password = "Hex304.gs";
 

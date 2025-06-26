@@ -1,11 +1,10 @@
 package menu;
 
+import entity.Feedback;
 import entity.Usuario;
 import conexao.Conexao;
 import dao.UsuarioDAO;
-import dao.FeedbackDAO;
-import menu.Gerenciador;
-import menu.Feedback;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Scanner;
@@ -41,7 +40,7 @@ public class SistemaFeedback {
 
         boolean execucao = true;
         while (execucao) {
-            System.out.println("\n=== Sistema de menu.Feedback ===");
+            System.out.println("\n=== Sistema de entity.Feedback ===");
             System.out.println("Selecione o papel:");
             System.out.println("1. Usuário");
             System.out.println("2. Administrador");
@@ -58,7 +57,7 @@ public class SistemaFeedback {
                     break;
                 case "3":
                     execucao = false;
-                    System.out.println("Encerrando o sistema. Obrigado.");
+                    System.out.println("Encerrando o sistema.");
                     break;
                 default:
                     System.out.println("Opção inválida. Tente novamente.");
@@ -78,9 +77,8 @@ public class SistemaFeedback {
     }
 
 
-    /**
-     * Menu principal para o usuário com opções de cadastro, login e enviar feedback.
-     */
+    // Menu principal para o usuário com opções de cadastro, login e enviar feedback.
+
     private static void menuUsuario() {
         boolean sair = false;
         while (!sair) {
@@ -109,9 +107,8 @@ public class SistemaFeedback {
         }
     }
 
-    /**
-     * Menu para envio de feedback após usuário estar logado.
-     */
+    // Menu para envio de feedback após usuário estar logado.
+
     private static void menuEnviarFeedback() {
         if (usuarioLogado == null) {
             System.out.println("Nenhum usuário logado. Por favor, faça login primeiro.");
@@ -120,28 +117,30 @@ public class SistemaFeedback {
 
         boolean sair = false;
         while (!sair) {
-            System.out.println("\n--- Menu menu.Feedback ---");
-            System.out.println("Usuário logado: " + usuarioLogado.getUsuario()); // Mostra o usuário logado
-            System.out.println("1. Enviar feedback");
-            System.out.println("2. Sair");
+            System.out.println("\n--- Menu Feedback ---");
+            System.out.println("Usuário logado: " + usuarioLogado.getUsuario());
+            System.out.println("1. Enviar novo feedback");
+            System.out.println("2. Ver meus feedbacks");
+            System.out.println("3. Atualizar meu feedback");
+            System.out.println("4. Excluir meu feedback");
+            System.out.println("5. Sair");
             System.out.print("Escolha sua opção: ");
             String opcao = scanner.nextLine();
 
             switch (opcao) {
                 case "1":
-                    System.out.print("Digite seu nome: ");
-                    String nome = scanner.nextLine().trim();
-                    System.out.print("Digite seu departamento: ");
-                    String departamento = scanner.nextLine().trim();
-                    System.out.print("Digite seu feedback: ");
-                    String textoFeedback = scanner.nextLine().trim();
-                    if (nome.isEmpty() || departamento.isEmpty() || textoFeedback.isEmpty()) {
-                        System.out.println("Todos os campos são obrigatórios. Tente novamente.");
-                    } else {
-                        gerenciador.registrarFeedback(nome, departamento, textoFeedback);
-                    }
+                    enviarNovoFeedback();
                     break;
                 case "2":
+                    verMeusFeedbacks();
+                    break;
+                case "3":
+                    atualizarMeuFeedback();
+                    break;
+                case "4":
+                    deletarMeuFeedback();
+                    break;
+                case "5":
                     sair = true;
                     usuarioLogado = null; // Desloga o usuário ao sair
                     System.out.println("Você foi desconectado.");
@@ -152,9 +151,101 @@ public class SistemaFeedback {
         }
     }
 
-    /**
-     * Processo de cadastro no banco via UsuarioDAO.
-     */
+    private static void enviarNovoFeedback() {
+        // Usar nome e departamento do usuário logado, não pedir novamente
+        String nome = usuarioLogado.getNome();
+        String departamento = usuarioLogado.getDepartamento();
+
+        System.out.print("Digite seu feedback: ");
+        String textoFeedback = scanner.nextLine().trim();
+
+        if (textoFeedback.isEmpty()) {
+            System.out.println("O texto do feedback é obrigatório. Tente novamente.");
+        } else {
+            gerenciador.registrarFeedback(nome, departamento, textoFeedback);
+        }
+    }
+
+   // Exibe feedbacks do usuário logado
+    private static void verMeusFeedbacks() {
+        System.out.println("\n--- Meus Feedbacks ---");
+        List<entity.Feedback> todosFeedbacks = gerenciador.listarFeedback();
+        boolean encontrou = false;
+        for (entity.Feedback f : todosFeedbacks) {
+            // Compara o nome e o departamento do feedback com os dados do usuário logado
+            if (f.getNome().equalsIgnoreCase(usuarioLogado.getNome()) &&
+                    f.getDepartamento().equalsIgnoreCase(usuarioLogado.getDepartamento())) {
+                System.out.println(f.toString());
+                encontrou = true;
+            }
+        }
+        if (!encontrou) {
+            System.out.println("Você não possui feedbacks registrados.");
+        }
+    }
+
+    // Permite ao usuário atualizar seu feedback
+    private static void atualizarMeuFeedback() {
+        System.out.print("Digite o ID do feedback que deseja atualizar: ");
+        String entrada = scanner.nextLine();
+        try {
+            int id = Integer.parseInt(entrada);
+            entity.Feedback feedback = gerenciador.buscarFeedbackPorId(id);
+
+            if (feedback != null) {
+                // Checa se o feedback pertence ao usuário logado
+                if (feedback.getNome().equalsIgnoreCase(usuarioLogado.getNome()) &&
+                        feedback.getDepartamento().equalsIgnoreCase(usuarioLogado.getDepartamento())) {
+                    System.out.println("Feedback atual: " + feedback.getTextoFeedback());
+                    System.out.print("Digite o novo texto para o feedback: ");
+                    String novoTexto = scanner.nextLine().trim();
+                    if (novoTexto.isEmpty()) {
+                        System.out.println("O texto do feedback não pode ser vazio.");
+                    } else {
+                        gerenciador.atualizarFeedback(id, novoTexto);
+                    }
+                } else {
+                    System.out.println("Você não tem permissão para atualizar este feedback. Você só pode alterar seus próprios feedbacks.");
+                }
+            } else {
+                System.out.println("Feedback com ID " + id + " não encontrado.");
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("ID inválido. Por favor, digite um número inteiro.");
+        }
+    }
+
+    // Permite ao usuário deletar seu feedback
+    private static void deletarMeuFeedback() {
+        System.out.print("Digite o ID do feedback que deseja excluir: ");
+        String entrada = scanner.nextLine();
+        try {
+            int id = Integer.parseInt(entrada);
+            entity.Feedback feedback = gerenciador.buscarFeedbackPorId(id);
+
+            if (feedback != null) {
+                // Checa se o feedback pertence ao usuário logado
+                if (feedback.getNome().equalsIgnoreCase(usuarioLogado.getNome()) &&
+                        feedback.getDepartamento().equalsIgnoreCase(usuarioLogado.getDepartamento())) {
+                    System.out.print("Tem certeza que deseja excluir o feedback? (s/n): ");
+                    String confirmacao = scanner.nextLine().toLowerCase();
+                    if (confirmacao.equals("s")) {
+                        gerenciador.deletarFeedback(id);
+                    } else {
+                        System.out.println("Exclusão cancelada.");
+                    }
+                } else {
+                    System.out.println("Você não tem permissão para excluir este feedback. Você só pode excluir seus próprios feedbacks.");
+                }
+            } else {
+                System.out.println("Feedback com ID " + id + " não encontrado.");
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("ID inválido. Por favor, digite um número inteiro.");
+        }
+    }
+
+    // Processo de cadastro no banco via UsuarioDAO
     private static void cadastrarUsuario() {
         System.out.print("Digite o nome completo: ");
         String nomeCompleto = scanner.nextLine().trim();
@@ -234,16 +325,15 @@ public class SistemaFeedback {
         }
     }
 
-    /**
-     * Menu e login do administrador com credenciais fixas.
-     */
+    // Menu e login do administrador com credenciais fixas.
+
     private static void menuAdmin() {
         System.out.print("Digite o nome de usuário do administrador: ");
         String usuarioAdmin = scanner.nextLine().trim();
         System.out.print("Digite a senha do administrador: ");
         String senhaAdmin = scanner.nextLine().trim();
 
-        //Verificação das credenciais fixas
+        // Verificação das credenciais fixas
         if (usuarioAdmin.equals(ADMIN_LOGIN) && senhaAdmin.equals(ADMIN_SENHA)) {
             System.out.println("Login de administrador realizado com sucesso.");
             menuAdminOperacoes();
@@ -252,17 +342,16 @@ public class SistemaFeedback {
         }
     }
 
-    /**
-     * Menu de operações administrativas após login bem-sucedido.
-     */
+    // Menu de operações administrativas após login bem-sucedido.
+
     private static void menuAdminOperacoes() {
         boolean sair = false;
         while (!sair) {
             System.out.println("\n--- Menu Administrador ---");
-            System.out.println("1. Listar feedbacks");
+            System.out.println("1. Listar todos os feedbacks");
             System.out.println("2. Buscar feedback por ID");
-            System.out.println("3. Atualizar feedback");
-            System.out.println("4. Excluir feedback");
+            System.out.println("3. Buscar por nome/departamento/texto");
+            System.out.println("4. Excluir feedback"); // Removida a opção de atualizar
             System.out.println("5. Exportar feedback para arquivo");
             System.out.println("6. Sair");
             System.out.print("Escolha sua opção: ");
@@ -276,7 +365,7 @@ public class SistemaFeedback {
                     buscarFeedbackPorIdAdmin();
                     break;
                 case "3":
-                    atualizarFeedbackAdmin();
+                    buscarFeedbackAdminPorCriterio();
                     break;
                 case "4":
                     deletarFeedbackAdmin();
@@ -293,14 +382,15 @@ public class SistemaFeedback {
         }
     }
 
+
     private static void listarFeedbacksAdmin() {
         System.out.println("\n--- Lista de Feedbacks (Mais Recente Primeiro) ---");
-        List<menu.Feedback> feedbacks = gerenciador.listarFeedback();
+        List<Feedback> feedbacks = gerenciador.listarFeedback();
         if (feedbacks.isEmpty()) {
             System.out.println("Nenhum feedback registrado.");
             return;
         }
-        for (menu.Feedback f : feedbacks) {
+        for (Feedback f : feedbacks) {
             System.out.println(f.toString());
         }
     }
@@ -310,32 +400,9 @@ public class SistemaFeedback {
         String entrada = scanner.nextLine();
         try {
             int id = Integer.parseInt(entrada);
-            menu.Feedback f = gerenciador.buscarFeedbackPorId(id);
+            Feedback f = gerenciador.buscarFeedbackPorId(id);
             if (f != null) {
                 System.out.println(f.toString());
-            } else {
-                System.out.println("Feedback não encontrado.");
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("ID inválido. Por favor, digite um número inteiro.");
-        }
-    }
-
-    private static void atualizarFeedbackAdmin() {
-        System.out.print("Digite o ID do feedback para atualizar: ");
-        String entrada = scanner.nextLine();
-        try {
-            int id = Integer.parseInt(entrada);
-            menu.Feedback f = gerenciador.buscarFeedbackPorId(id);
-            if (f != null) {
-                System.out.println("Feedback atual: " + f.getTextoFeedback());
-                System.out.print("Digite o novo texto do feedback: ");
-                String novoTexto = scanner.nextLine();
-                if (novoTexto.trim().isEmpty()) {
-                    System.out.println("O novo texto do feedback não pode ser vazio.");
-                } else {
-                    gerenciador.atualizarFeedback(id, novoTexto);
-                }
             } else {
                 System.out.println("Feedback não encontrado.");
             }
@@ -349,7 +416,7 @@ public class SistemaFeedback {
         String entrada = scanner.nextLine();
         try {
             int id = Integer.parseInt(entrada);
-            menu.Feedback f = gerenciador.buscarFeedbackPorId(id);
+            Feedback f = gerenciador.buscarFeedbackPorId(id);
             if (f != null) {
                 gerenciador.deletarFeedback(id);
             } else {
@@ -357,6 +424,24 @@ public class SistemaFeedback {
             }
         } catch (NumberFormatException e) {
             System.out.println("ID inválido. Por favor, digite um número inteiro.");
+        }
+    }
+
+    private static void buscarFeedbackAdminPorCriterio() {
+        System.out.print("Digite um termo para a busca (nome, departamento ou texto): ");
+        String termoBusca = scanner.nextLine().trim();
+        if (termoBusca.isEmpty()) {
+            System.out.println("O termo de busca não pode ser vazio.");
+            return;
+        }
+        System.out.println("\n--- Resultados da Busca ---");
+        List<entity.Feedback> resultados = gerenciador.buscarFeedbacksPorCriterio(termoBusca);
+        if (resultados.isEmpty()) {
+            System.out.println("Nenhum feedback encontrado para o termo '" + termoBusca + "'.");
+        } else {
+            for (entity.Feedback f : resultados) {
+                System.out.println(f.toString());
+            }
         }
     }
 

@@ -1,10 +1,9 @@
 package menu;
 
 import dao.FeedbackDAO;
-import dao.UsuarioDAO;
+import entity.Feedback;
+
 import java.time.LocalDateTime; // Adicionado para exportar data e hora
-import java.util.Stack;
-import java.util.ArrayList;
 import java.util.List;
 import java.io.FileWriter; // Adicionado para exportação de arquivo
 import java.io.IOException; // Adicionado para tratamento de exceção de I/O
@@ -64,6 +63,12 @@ public class Gerenciador {
         } else {
             System.out.println("Feedback com ID " + id + " não encontrado ou erro ao deletar.");
         }
+    }
+
+    // Para o administrador buscar por critério
+
+    public List<Feedback> buscarFeedbacksPorCriterio(String termoBusca) {
+        return feedbackDAO.listarFeedbacksPorCriterio(termoBusca);
     }
 
     /**
