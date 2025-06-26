@@ -14,7 +14,7 @@ public class Conexao {
     private static Connection con;
 
      // Verificando se a conexão ja foi feita e se ainda está aberta, caso não esteja, cria uma nova conexão.
-
+;77*
     public static Connection getConexao(){
         try {
             // É uma boa prática carregar o driver explicitamente para garantir que ele esteja disponível.
