@@ -30,9 +30,7 @@ public class Usuario {
         this.senha = senha;
     }
 
-    /**
-     * Encapsulamento
-     */
+    // Encapsulamento
 
     public String getNome() {
         return nome;

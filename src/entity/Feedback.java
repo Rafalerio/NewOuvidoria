@@ -25,7 +25,7 @@ public class Feedback {
         this.dataHora = dataHora; // Usa a data/hora do banco
     }
 
-    // Métodos getters e toString
+    // Métodos getters
     public int getId() { return id; }
     public String getNome() { return nome; }
     public String getDepartamento() { return departamento; }

@@ -1,463 +1,287 @@
 package menu;
 
-import entity.Feedback;
 import entity.Usuario;
 import conexao.Conexao;
 import dao.UsuarioDAO;
-
 import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Scanner;
+import javax.swing.*;
+import java.awt.*;
 import java.util.List;
-import java.io.IOException;
 
 /**
- * Classe principal do sistema de feedback.
- * Gerencia os menus interativos de usuário e administrador
- * Faz uso da conexão com banco e gerenciador de feedback.
+ * Classe principal do sistema de feedback com interface gráfica.
+ * Gerencia os diferentes painéis (menu inicial, login, usuário, administrador).
  */
-public class SistemaFeedback {
+public class SistemaFeedback extends JFrame {
 
-    private static Gerenciador gerenciador = new Gerenciador();
-    private static UsuarioDAO usuarioDAO = new UsuarioDAO(); // Instância de UsuarioDAO
-    private static Scanner scanner = new Scanner(System.in);
-    private static Connection conexao;
-    private static Usuario usuarioLogado; // Armazena o usuário logado atualmente
+    private static Gerenciador gerenciador = new Gerenciador(); // Gerenciador para operações de feedback
+    private static UsuarioDAO usuarioDAO = new UsuarioDAO();   // DAO para operações de usuário
+    private static Connection conexao;                         // Conexão com o banco de dados
+    private static Usuario usuarioLogado;                      // Usuário atualmente logado
 
-    // Credenciais fixas do administrador
-    private static final String ADMIN_LOGIN = "admin123";
-    private static final String ADMIN_SENHA = "admin321";
+    private JPanel cards; // Um painel que usa CardLayout
 
-    public static void main(String[] args) throws SQLException {
+    // Constantes para os nomes dos painéis no CardLayout
+    public static final String INITIAL_MENU_PANEL = "Menu Inicial";
+    public static final String COLABORADORES_PANEL = "Colaboradores";
+    public static final String ADMIN_LOGIN_PANEL = "AdminLogin";
+    public static final String USER_PANEL = "Usuario";
+    public static final String ADMIN_PANEL = "Administrador";
+
+    // Painéis que serão trocados
+    private MenuInicialPanel menuInicialPanel;
+    private ColaboradoresPanel colaboradoresPanel; // Renomeado
+    private AdminLoginPanel adminLoginPanel;      // Novo
+    private UserPanel userPanel;
+    private AdminPanel adminPanel;
+
+    public SistemaFeedback() {
+        setTitle("Sistema de Feedback");
+        setSize(1000, 700); // Tamanho da janela
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null); // Centraliza a janela na tela
+
         // Estabelece conexão com o banco de dados
-        conexao = Conexao.getConexao(); // Chamar o método getConexao para obter a conexão
-        if (conexao != null) {
-            System.out.println("Conectado ao banco de dados com sucesso.");
+        conexao = Conexao.getConexao();
+        if (conexao == null) {
+            JOptionPane.showMessageDialog(this,
+                    "Falha ao conectar ao banco de dados. Verifique o servidor MySQL e as credenciais.",
+                    "Erro de Conexão", JOptionPane.ERROR_MESSAGE);
+            System.exit(1); // Encerra a aplicação se não houver conexão
+            return;
+        }
+
+        cards = new JPanel(new CardLayout());
+
+        // Inicializa os painéis
+        menuInicialPanel = new MenuInicialPanel(this);
+        colaboradoresPanel = new ColaboradoresPanel(this); // Passa a referência da JFrame
+        adminLoginPanel = new AdminLoginPanel(this);        // Novo painel de login admin
+        userPanel = new UserPanel(this);                   // Passa a referência da JFrame
+        adminPanel = new AdminPanel(this);                 // Passa a referência da JFrame
+
+        // Adiciona os painéis ao CardLayout
+        cards.add(menuInicialPanel, INITIAL_MENU_PANEL);
+        cards.add(colaboradoresPanel, COLABORADORES_PANEL);
+        cards.add(adminLoginPanel, ADMIN_LOGIN_PANEL);
+        cards.add(userPanel, USER_PANEL);
+        cards.add(adminPanel, ADMIN_PANEL);
+
+        add(cards); // Adiciona o painel com CardLayout ao JFrame
+
+        showPanel(INITIAL_MENU_PANEL); // Começa mostrando o menu inicial
+    }
+
+    /**
+     * Alterna entre os painéis visíveis.
+     * @param panelName O nome do painel a ser mostrado (constantes definidas acima).
+     */
+    public void showPanel(String panelName) {
+        CardLayout cl = (CardLayout)(cards.getLayout());
+        cl.show(cards, panelName);
+        // Ao mostrar um painel, pode ser necessário inicializar ou carregar dados específicos
+        if (panelName.equals(USER_PANEL)) {
+            userPanel.loadUserFeedbacks(); // Carrega feedbacks do usuário ao entrar no painel
+        } else if (panelName.equals(ADMIN_PANEL)) {
+            adminPanel.loadAllFeedbacks(); // Carrega todos os feedbacks ao entrar no painel admin
+        }
+    }
+
+    /**
+     * Tenta realizar o login de um usuário.
+     * @param login O nome de usuário.
+     * @param senha A senha.
+     * @return true se o login for bem-sucedido, false caso contrário.
+     */
+    public boolean loginUsuario(String login, String senha) {
+        Usuario credenciais = new Usuario(login, senha); // Construtor de Usuario deve aceitar login e senha
+        usuarioLogado = usuarioDAO.loginUsuario(credenciais);
+        if (usuarioLogado != null) {
+            JOptionPane.showMessageDialog(this,
+                    "Login de usuário realizado com sucesso. Bem-vindo, " + usuarioLogado.getNome() + "!",
+                    "Login Bem-Sucedido", JOptionPane.INFORMATION_MESSAGE);
+            userPanel.setWelcomeMessage("Bem-vindo, " + usuarioLogado.getNome());
+            showPanel(USER_PANEL);
+            return true;
         } else {
-            System.out.println("Falha ao conectar ao banco de dados.");
-            return; // Encerrar se não houver conexão
+            JOptionPane.showMessageDialog(this,
+                    "Usuário ou senha incorretos.",
+                    "Erro de Login", JOptionPane.ERROR_MESSAGE);
+            return false;
         }
+    }
 
-        boolean execucao = true;
-        while (execucao) {
-            System.out.println("\n=== Sistema de entity.Feedback ===");
-            System.out.println("Selecione o papel:");
-            System.out.println("1. Usuário");
-            System.out.println("2. Administrador");
-            System.out.println("3. Sair");
-            System.out.print("Escolha sua opção: ");
-            String input = scanner.nextLine();
+    /**
+     * Tenta realizar o login de um administrador.
+     * @param login O nome de usuário do administrador.
+     * @param senha A senha do administrador.
+     * @return true se o login for bem-sucedido, false caso contrário.
+     */
+    public boolean loginAdmin(String login, String senha) {
+        // Credenciais fixas do administrador (como no SistemaFeedback original)
+        String ADMIN_LOGIN = "admin123";
+        String ADMIN_SENHA = "admin321";
 
-            switch (input) {
-                case "1":
-                    menuUsuario();
-                    break;
-                case "2":
-                    menuAdmin();
-                    break;
-                case "3":
-                    execucao = false;
-                    System.out.println("Encerrando o sistema.");
-                    break;
-                default:
-                    System.out.println("Opção inválida. Tente novamente.");
+        if (login.equals(ADMIN_LOGIN) && senha.equals(ADMIN_SENHA)) {
+            JOptionPane.showMessageDialog(this,
+                    "Login de administrador realizado com sucesso.",
+                    "Login Bem-Sucedido", JOptionPane.INFORMATION_MESSAGE);
+            showPanel(ADMIN_PANEL);
+            return true;
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "Usuário ou senha de administrador incorretos.",
+                    "Erro de Login", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+    }
+
+    /**
+     * Tenta cadastrar um novo usuário.
+     * @return true se o cadastro for bem-sucedido, false caso contrário.
+     */
+    public boolean cadastrarUsuario(String nomeCompleto, String login, String email, String senha, String funcao, String departamento) {
+        if (nomeCompleto.isEmpty() || login.isEmpty() || email.isEmpty() || senha.isEmpty() || funcao.isEmpty() || departamento.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Todos os campos são obrigatórios para o cadastro.", "Erro de Cadastro", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        if (usuarioDAO.verificarUsuarioExistente(login)) {
+            JOptionPane.showMessageDialog(this, "Usuário já cadastrado. Tente outro nome de usuário.", "Erro de Cadastro", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        Usuario novoUsuario = new Usuario(nomeCompleto, login, email, senha, funcao, departamento);
+        usuarioDAO.cadastrarUsuario(novoUsuario);
+        JOptionPane.showMessageDialog(this, "Usuário cadastrado com sucesso!", "Cadastro", JOptionPane.INFORMATION_MESSAGE);
+        return true;
+    }
+
+    // Métodos para operações de feedback (chamados pelos painéis de usuário/admin)
+
+    public Usuario getUsuarioLogado() {
+        return usuarioLogado;
+    }
+
+    // Desloga o usuário atual e retorna para a tela de menu inicial.
+
+    public void logout() {
+        usuarioLogado = null; // Define o usuário logado como nulo
+        showPanel(INITIAL_MENU_PANEL); // Volta para o painel do menu inicial
+        JOptionPane.showMessageDialog(this, "Você foi desconectado.", "Logout", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    // Métodos delegados ao gerenciador (para serem chamados pelos painéis)
+    public void registrarFeedback(String textoFeedback) {
+        if (usuarioLogado != null) {
+            gerenciador.registrarFeedback(usuarioLogado.getNome(), usuarioLogado.getDepartamento(), textoFeedback);
+            JOptionPane.showMessageDialog(this, "Feedback enviado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(this, "Nenhum usuário logado para enviar feedback.", "Erro", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public List<entity.Feedback> listarMeusFeedbacks() {
+        if (usuarioLogado == null) {
+            return new java.util.ArrayList<>(); // Retorna lista vazia se não há usuário logado
+        }
+        List<entity.Feedback> todosFeedbacks = gerenciador.listarFeedback(); // busca do Banco de dados
+        List<entity.Feedback> meusFeedbacks = new java.util.ArrayList<>();
+        for (entity.Feedback f : todosFeedbacks) {
+            // Verifica pelo nome e departamento
+            if (f.getNome().equalsIgnoreCase(usuarioLogado.getNome()) &&
+                    f.getDepartamento().equalsIgnoreCase(usuarioLogado.getDepartamento())) {
+                meusFeedbacks.add(f);
             }
         }
+        return meusFeedbacks;
+    }
 
+    public entity.Feedback buscarMeuFeedbackPorId(int id) {
+        if (usuarioLogado == null) {
+            return null;
+        }
+        entity.Feedback feedback = gerenciador.buscarFeedbackPorId(id);
+        if (feedback != null &&
+                feedback.getNome().equalsIgnoreCase(usuarioLogado.getNome()) &&
+                feedback.getDepartamento().equalsIgnoreCase(usuarioLogado.getDepartamento())) {
+            return feedback;
+        }
+        return null;
+    }
+
+    public void atualizarMeuFeedback(int id, String novoTexto) {
+        entity.Feedback feedback = gerenciador.buscarFeedbackPorId(id);
+        if (feedback != null) {
+            if (feedback.getNome().equalsIgnoreCase(usuarioLogado.getNome()) &&
+                    feedback.getDepartamento().equalsIgnoreCase(usuarioLogado.getDepartamento())) {
+                gerenciador.atualizarFeedback(id, novoTexto);
+                JOptionPane.showMessageDialog(this, "Feedback atualizado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, "Você não tem permissão para atualizar este feedback.", "Permissão Negada", JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Feedback com ID " + id + " não encontrado.", "Erro", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public void deletarMeuFeedback(int id) {
+        entity.Feedback feedback = gerenciador.buscarFeedbackPorId(id);
+        if (feedback != null) {
+            if (feedback.getNome().equalsIgnoreCase(usuarioLogado.getNome()) &&
+                    feedback.getDepartamento().equalsIgnoreCase(usuarioLogado.getDepartamento())) {
+                int confirm = JOptionPane.showConfirmDialog(this, "Tem certeza que deseja excluir o feedback " + id + "?", "Confirmação", JOptionPane.YES_NO_OPTION);
+                if (confirm == JOptionPane.YES_OPTION) {
+                    gerenciador.deletarFeedback(id);
+                    JOptionPane.showMessageDialog(this, "Feedback deletado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Você não tem permissão para excluir este feedback.", "Permissão Negada", JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Feedback com ID " + id + " não encontrado.", "Erro", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // Métodos para Admin
+    public List<entity.Feedback> listarTodosFeedbacks() {
+        return gerenciador.listarFeedback(); // Agora busca do DB
+    }
+
+    public entity.Feedback buscarFeedbackAdminPorId(int id) {
+        return gerenciador.buscarFeedbackPorId(id); // Busca diretamente do DB
+    }
+
+    public void deletarFeedbackAdmin(int id) {
+        entity.Feedback feedback = gerenciador.buscarFeedbackPorId(id);
+        if (feedback != null) {
+            int confirm = JOptionPane.showConfirmDialog(this, "Tem certeza que deseja excluir o feedback " + id + " (ADMIN)?", "Confirmação", JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) {
+                gerenciador.deletarFeedback(id);
+                JOptionPane.showMessageDialog(this, "Feedback (ADMIN) deletado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Feedback com ID " + id + " não encontrado.", "Erro", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public List<entity.Feedback> buscarFeedbacksAdminPorCriterio(String termoBusca) {
+        return gerenciador.buscarFeedbacksPorCriterio(termoBusca); // Busca do DB
+    }
+
+    public void exportarFeedbacksAdmin(String nomeArquivo) {
         try {
-            // Fechar a conexão ao sair do sistema
-            if (conexao != null && !conexao.isClosed()) {
-                conexao.close();
-                System.out.println("Conexão com o banco de dados fechada.");
-            }
-        } catch (SQLException e) {
-            System.out.println("Erro ao fechar conexão: " + e.getMessage());
+            gerenciador.exportarFeedbackParaArquivo(nomeArquivo);
+            JOptionPane.showMessageDialog(this, "Exportação realizada com sucesso para " + nomeArquivo, "Exportação", JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Erro na exportação: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
     }
 
 
-    // Menu principal para o usuário com opções de cadastro, login e enviar feedback.
-
-    private static void menuUsuario() {
-        boolean sair = false;
-        while (!sair) {
-            System.out.println("\n--- Menu Usuário ---");
-            System.out.println("1. Cadastrar usuário");
-            System.out.println("2. Login");
-            System.out.println("3. Voltar");
-            System.out.print("Escolha sua opção: ");
-            String opcao = scanner.nextLine();
-
-            switch (opcao) {
-                case "1":
-                    cadastrarUsuario();
-                    break;
-                case "2":
-                    if (loginUsuario()) {
-                        menuEnviarFeedback();
-                    }
-                    break;
-                case "3":
-                    sair = true;
-                    break;
-                default:
-                    System.out.println("Opção inválida. Tente novamente.");
-            }
-        }
-    }
-
-    // Menu para envio de feedback após usuário estar logado.
-
-    private static void menuEnviarFeedback() {
-        if (usuarioLogado == null) {
-            System.out.println("Nenhum usuário logado. Por favor, faça login primeiro.");
-            return;
-        }
-
-        boolean sair = false;
-        while (!sair) {
-            System.out.println("\n--- Menu Feedback ---");
-            System.out.println("Usuário logado: " + usuarioLogado.getUsuario());
-            System.out.println("1. Enviar novo feedback");
-            System.out.println("2. Ver meus feedbacks");
-            System.out.println("3. Atualizar meu feedback");
-            System.out.println("4. Excluir meu feedback");
-            System.out.println("5. Sair");
-            System.out.print("Escolha sua opção: ");
-            String opcao = scanner.nextLine();
-
-            switch (opcao) {
-                case "1":
-                    enviarNovoFeedback();
-                    break;
-                case "2":
-                    verMeusFeedbacks();
-                    break;
-                case "3":
-                    atualizarMeuFeedback();
-                    break;
-                case "4":
-                    deletarMeuFeedback();
-                    break;
-                case "5":
-                    sair = true;
-                    usuarioLogado = null; // Desloga o usuário ao sair
-                    System.out.println("Você foi desconectado.");
-                    break;
-                default:
-                    System.out.println("Opção inválida. Tente novamente.");
-            }
-        }
-    }
-
-    private static void enviarNovoFeedback() {
-        // Usar nome e departamento do usuário logado, não pedir novamente
-        String nome = usuarioLogado.getNome();
-        String departamento = usuarioLogado.getDepartamento();
-
-        System.out.print("Digite seu feedback: ");
-        String textoFeedback = scanner.nextLine().trim();
-
-        if (textoFeedback.isEmpty()) {
-            System.out.println("O texto do feedback é obrigatório. Tente novamente.");
-        } else {
-            gerenciador.registrarFeedback(nome, departamento, textoFeedback);
-        }
-    }
-
-   // Exibe feedbacks do usuário logado
-    private static void verMeusFeedbacks() {
-        System.out.println("\n--- Meus Feedbacks ---");
-        List<entity.Feedback> todosFeedbacks = gerenciador.listarFeedback();
-        boolean encontrou = false;
-        for (entity.Feedback f : todosFeedbacks) {
-            // Compara o nome e o departamento do feedback com os dados do usuário logado
-            if (f.getNome().equalsIgnoreCase(usuarioLogado.getNome()) &&
-                    f.getDepartamento().equalsIgnoreCase(usuarioLogado.getDepartamento())) {
-                System.out.println(f.toString());
-                encontrou = true;
-            }
-        }
-        if (!encontrou) {
-            System.out.println("Você não possui feedbacks registrados.");
-        }
-    }
-
-    // Permite ao usuário atualizar seu feedback
-    private static void atualizarMeuFeedback() {
-        System.out.print("Digite o ID do feedback que deseja atualizar: ");
-        String entrada = scanner.nextLine();
-        try {
-            int id = Integer.parseInt(entrada);
-            entity.Feedback feedback = gerenciador.buscarFeedbackPorId(id);
-
-            if (feedback != null) {
-                // Checa se o feedback pertence ao usuário logado
-                if (feedback.getNome().equalsIgnoreCase(usuarioLogado.getNome()) &&
-                        feedback.getDepartamento().equalsIgnoreCase(usuarioLogado.getDepartamento())) {
-                    System.out.println("Feedback atual: " + feedback.getTextoFeedback());
-                    System.out.print("Digite o novo texto para o feedback: ");
-                    String novoTexto = scanner.nextLine().trim();
-                    if (novoTexto.isEmpty()) {
-                        System.out.println("O texto do feedback não pode ser vazio.");
-                    } else {
-                        gerenciador.atualizarFeedback(id, novoTexto);
-                    }
-                } else {
-                    System.out.println("Você não tem permissão para atualizar este feedback. Você só pode alterar seus próprios feedbacks.");
-                }
-            } else {
-                System.out.println("Feedback com ID " + id + " não encontrado.");
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("ID inválido. Por favor, digite um número inteiro.");
-        }
-    }
-
-    // Permite ao usuário deletar seu feedback
-    private static void deletarMeuFeedback() {
-        System.out.print("Digite o ID do feedback que deseja excluir: ");
-        String entrada = scanner.nextLine();
-        try {
-            int id = Integer.parseInt(entrada);
-            entity.Feedback feedback = gerenciador.buscarFeedbackPorId(id);
-
-            if (feedback != null) {
-                // Checa se o feedback pertence ao usuário logado
-                if (feedback.getNome().equalsIgnoreCase(usuarioLogado.getNome()) &&
-                        feedback.getDepartamento().equalsIgnoreCase(usuarioLogado.getDepartamento())) {
-                    System.out.print("Tem certeza que deseja excluir o feedback? (s/n): ");
-                    String confirmacao = scanner.nextLine().toLowerCase();
-                    if (confirmacao.equals("s")) {
-                        gerenciador.deletarFeedback(id);
-                    } else {
-                        System.out.println("Exclusão cancelada.");
-                    }
-                } else {
-                    System.out.println("Você não tem permissão para excluir este feedback. Você só pode excluir seus próprios feedbacks.");
-                }
-            } else {
-                System.out.println("Feedback com ID " + id + " não encontrado.");
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("ID inválido. Por favor, digite um número inteiro.");
-        }
-    }
-
-    // Processo de cadastro no banco via UsuarioDAO
-    private static void cadastrarUsuario() {
-        System.out.print("Digite o nome completo: ");
-        String nomeCompleto = scanner.nextLine().trim();
-        if (nomeCompleto.isEmpty()) {
-            System.out.println("Nome completo não pode ser vazio.");
-            return;
-        }
-
-        System.out.print("Digite o nome de usuário (login): ");
-        String login = scanner.nextLine().trim();
-        if (login.isEmpty()) {
-            System.out.println("Nome de usuário (login) não pode ser vazio.");
-            return;
-        }
-
-        if (usuarioDAO.verificarUsuarioExistente(login)) {
-            System.out.println("Usuário já cadastrado. Tente outro nome de usuário.");
-            return;
-        }
-
-        System.out.print("Digite o email: ");
-        String email = scanner.nextLine().trim();
-        if (email.isEmpty()) {
-            System.out.println("Email não pode ser vazio.");
-            return;
-        }
-
-        System.out.print("Digite a senha: ");
-        String senha = scanner.nextLine().trim();
-        if (senha.isEmpty()) {
-            System.out.println("Senha não pode ser vazia.");
-            return;
-        }
-
-        System.out.print("Digite a função (ex: funcionário, gestor): ");
-        String funcao = scanner.nextLine().trim();
-        if (funcao.isEmpty()) {
-            System.out.println("Função não pode ser vazia.");
-            return;
-        }
-
-        System.out.print("Digite o departamento: ");
-        String departamento = scanner.nextLine().trim();
-        if (departamento.isEmpty()) {
-            System.out.println("Departamento não pode ser vazio.");
-            return;
-        }
-
-        Usuario novoUsuario = new Usuario(nomeCompleto, login, email, senha, funcao, departamento);
-
-        usuarioDAO.cadastrarUsuario(novoUsuario);
-        System.out.println("Cadastro realizado com sucesso.");
-    }
-
-
-    /**
-     * Processo de login pelo banco via UsuarioDAO.
-     * @return boolean true se login usuário válido
-     */
-    private static boolean loginUsuario() {
-        System.out.print("Digite o nome de usuário: ");
-        String login = scanner.nextLine().trim();
-        System.out.print("Digite a senha: ");
-        String senha = scanner.nextLine().trim();
-
-        Usuario credenciais = new Usuario(login, senha);
-
-        Usuario usuarioAutenticado = usuarioDAO.loginUsuario(credenciais);
-
-        if (usuarioAutenticado != null) {
-            usuarioLogado = usuarioAutenticado;
-            System.out.println("Login de usuário realizado com sucesso. Bem-vindo, " + usuarioLogado.getNome() + "!");
-            return true;
-        } else {
-            System.out.println("Usuário ou senha incorretos.");
-            return false;
-        }
-    }
-
-    // Menu e login do administrador com credenciais fixas.
-
-    private static void menuAdmin() {
-        System.out.print("Digite o nome de usuário do administrador: ");
-        String usuarioAdmin = scanner.nextLine().trim();
-        System.out.print("Digite a senha do administrador: ");
-        String senhaAdmin = scanner.nextLine().trim();
-
-        // Verificação das credenciais fixas
-        if (usuarioAdmin.equals(ADMIN_LOGIN) && senhaAdmin.equals(ADMIN_SENHA)) {
-            System.out.println("Login de administrador realizado com sucesso.");
-            menuAdminOperacoes();
-        } else {
-            System.out.println("Falha no login de administrador. Verifique as credenciais.");
-        }
-    }
-
-    // Menu de operações administrativas após login bem-sucedido.
-
-    private static void menuAdminOperacoes() {
-        boolean sair = false;
-        while (!sair) {
-            System.out.println("\n--- Menu Administrador ---");
-            System.out.println("1. Listar todos os feedbacks");
-            System.out.println("2. Buscar feedback por ID");
-            System.out.println("3. Buscar por nome/departamento/texto");
-            System.out.println("4. Excluir feedback"); // Removida a opção de atualizar
-            System.out.println("5. Exportar feedback para arquivo");
-            System.out.println("6. Sair");
-            System.out.print("Escolha sua opção: ");
-            String opcao = scanner.nextLine();
-
-            switch (opcao) {
-                case "1":
-                    listarFeedbacksAdmin();
-                    break;
-                case "2":
-                    buscarFeedbackPorIdAdmin();
-                    break;
-                case "3":
-                    buscarFeedbackAdminPorCriterio();
-                    break;
-                case "4":
-                    deletarFeedbackAdmin();
-                    break;
-                case "5":
-                    exportarFeedbacksAdmin();
-                    break;
-                case "6":
-                    sair = true;
-                    break;
-                default:
-                    System.out.println("Opção inválida. Tente novamente.");
-            }
-        }
-    }
-
-
-    private static void listarFeedbacksAdmin() {
-        System.out.println("\n--- Lista de Feedbacks (Mais Recente Primeiro) ---");
-        List<Feedback> feedbacks = gerenciador.listarFeedback();
-        if (feedbacks.isEmpty()) {
-            System.out.println("Nenhum feedback registrado.");
-            return;
-        }
-        for (Feedback f : feedbacks) {
-            System.out.println(f.toString());
-        }
-    }
-
-    private static void buscarFeedbackPorIdAdmin() {
-        System.out.print("Digite o ID do feedback para busca: ");
-        String entrada = scanner.nextLine();
-        try {
-            int id = Integer.parseInt(entrada);
-            Feedback f = gerenciador.buscarFeedbackPorId(id);
-            if (f != null) {
-                System.out.println(f.toString());
-            } else {
-                System.out.println("Feedback não encontrado.");
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("ID inválido. Por favor, digite um número inteiro.");
-        }
-    }
-
-    private static void deletarFeedbackAdmin() {
-        System.out.print("Digite o ID do feedback para deletar: ");
-        String entrada = scanner.nextLine();
-        try {
-            int id = Integer.parseInt(entrada);
-            Feedback f = gerenciador.buscarFeedbackPorId(id);
-            if (f != null) {
-                gerenciador.deletarFeedback(id);
-            } else {
-                System.out.println("Feedback não encontrado.");
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("ID inválido. Por favor, digite um número inteiro.");
-        }
-    }
-
-    private static void buscarFeedbackAdminPorCriterio() {
-        System.out.print("Digite um termo para a busca (nome, departamento ou texto): ");
-        String termoBusca = scanner.nextLine().trim();
-        if (termoBusca.isEmpty()) {
-            System.out.println("O termo de busca não pode ser vazio.");
-            return;
-        }
-        System.out.println("\n--- Resultados da Busca ---");
-        List<entity.Feedback> resultados = gerenciador.buscarFeedbacksPorCriterio(termoBusca);
-        if (resultados.isEmpty()) {
-            System.out.println("Nenhum feedback encontrado para o termo '" + termoBusca + "'.");
-        } else {
-            for (entity.Feedback f : resultados) {
-                System.out.println(f.toString());
-            }
-        }
-    }
-
-    private static void exportarFeedbacksAdmin() {
-        System.out.print("Digite o nome do arquivo para exportação (exemplo: feedbacks.txt): ");
-        String nomeArquivo = scanner.nextLine().trim();
-        if (nomeArquivo.isEmpty()) {
-            System.out.println("Nome de arquivo inválido. Não pode ser vazio.");
-            return;
-        }
-        try {
-            gerenciador.exportarFeedbackParaArquivo(nomeArquivo);
-            System.out.println("Exportação realizada com sucesso para " + nomeArquivo);
-        } catch (IOException e) {
-            System.out.println("Erro na exportação: " + e.getMessage());
-            e.printStackTrace(); // Imprime o stack trace para depuração
-        }
+    public static void main(String[] args) {
+        // Garante que a GUI seja executada
+        SwingUtilities.invokeLater(() -> {
+            new SistemaFeedback().setVisible(true);
+        });
     }
 }
