@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
- // Conexao do banco de dados
+ // Conexão do banco de dados
 
 public class Conexao {
     private static final String url = "jdbc:mysql://newouvidoria-newouvidoria.i.aivencloud.com:11148/defaultdb?sslmode=require";
@@ -17,7 +17,7 @@ public class Conexao {
 
     public static Connection getConexao(){
         try {
-            // É uma boa prática carregar o driver explicitamente para garantir que ele esteja disponível.
+            // Carrega o driver explicitamente para garantir que ele esteja disponível.
             Class.forName("com.mysql.cj.jdbc.Driver");
 
             // Verifica se a conexão é nula ou se está fechada, para reestabelecer se necessário.

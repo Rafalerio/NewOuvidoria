@@ -3,9 +3,9 @@ package menu;
 import javax.swing.*;
 import java.awt.*;
 
-/**
- * Painel inicial com opções de "Colaboradores" e "Administração".
- */
+
+ // Painel inicial com opções de "Colaboradores" e "Administração".
+
 public class MenuInicialPanel extends JPanel {
 
     private SistemaFeedback mainFrame; // Referência para o JFrame principal

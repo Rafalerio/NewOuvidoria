@@ -5,9 +5,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-/**
- * Painel para a interface de Login e Cadastro de Usuário (Colaboradores).
- */
+
+ // Painel para a interface de Login e Cadastro de Usuário (Colaboradores).
+
 public class ColaboradoresPanel extends JPanel { // Renomeado de LoginPanel
 
     private SistemaFeedback mainFrame; // Referência para o JFrame principal
@@ -26,7 +26,7 @@ public class ColaboradoresPanel extends JPanel { // Renomeado de LoginPanel
         this.mainFrame = mainFrame;
         setLayout(new BorderLayout()); // Usa BorderLayout para organizar os sub-painéis
 
-        // --- Painel de Login ---
+        // Painel de Login
         JPanel loginPanel = new JPanel(new GridLayout(3, 2, 10, 10)); // Grid para campos e botões
         loginPanel.setBorder(BorderFactory.createTitledBorder("Login de Usuário Existente"));
         loginPanel.add(new JLabel("Login:"));
@@ -52,7 +52,7 @@ public class ColaboradoresPanel extends JPanel { // Renomeado de LoginPanel
         loginPanel.add(loginButtons); // Adiciona os botões no grid como se fossem um único componente
 
 
-        // --- Painel de Cadastro ---
+        // Painel de Cadastro
         JPanel registerPanel = new JPanel(new GridLayout(7, 2, 10, 10)); // Grid para campos
         registerPanel.setBorder(BorderFactory.createTitledBorder("Novo Cadastro de Usuário"));
         registerPanel.add(new JLabel("Nome Completo:"));

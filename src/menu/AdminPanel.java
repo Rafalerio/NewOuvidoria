@@ -7,9 +7,9 @@ import java.awt.*;
 import java.util.List;
 import java.time.format.DateTimeFormatter;
 
-/**
- * Painel para a interface de administrador.
- */
+
+ // Painel para a interface de administrador.
+
 public class AdminPanel extends JPanel {
 
     private SistemaFeedback mainFrame; // Referência para o JFrame principal
@@ -29,7 +29,7 @@ public class AdminPanel extends JPanel {
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
         add(titleLabel, BorderLayout.NORTH);
 
-        // --- Painel de Tabela de Feedbacks ---
+        // Painel de Tabela de Feedbacks
         JPanel tablePanel = new JPanel(new BorderLayout());
         tablePanel.setBorder(BorderFactory.createTitledBorder("Todos os Feedbacks"));
 
@@ -45,7 +45,7 @@ public class AdminPanel extends JPanel {
         JScrollPane scrollPane = new JScrollPane(feedbackTable);
         tablePanel.add(scrollPane, BorderLayout.CENTER);
 
-        // --- Painel de Controle (Busca, Deletar, Exportar, Logout) ---
+        // Painel de Controle (Busca, Deletar, Exportar, Logout)
         JPanel controlWrapperPanel = new JPanel(); // Wrapper para melhor organização
         controlWrapperPanel.setLayout(new BoxLayout(controlWrapperPanel, BoxLayout.Y_AXIS)); // Organiza verticalmente
 
@@ -144,9 +144,9 @@ public class AdminPanel extends JPanel {
         logoutButton.addActionListener(e -> mainFrame.logout());
     }
 
-    /**
-     * Carrega e exibe todos os feedbacks na tabela.
-     */
+
+     // Carrega e exibe todos os feedbacks na tabela.
+
     public void loadAllFeedbacks() {
         tableModel.setRowCount(0); // Limpa a tabela
         List<Feedback> feedbacks = mainFrame.listarTodosFeedbacks();
@@ -163,10 +163,9 @@ public class AdminPanel extends JPanel {
         populateTable(resultados);
     }
 
-    /**
-     * Busca e exibe um feedback específico por ID.
-     * @param id O ID do feedback a ser buscado.
-     */
+
+     // Busca e exibe um feedback específico por ID.
+
     public void searchFeedbackById(int id) {
         tableModel.setRowCount(0); // Limpa a tabela
         Feedback feedback = mainFrame.buscarFeedbackAdminPorId(id);
@@ -192,7 +191,7 @@ public class AdminPanel extends JPanel {
                 });
             }
         } else {
-            // Mensagem genérica se a lista estiver vazia (aplica-se a todos, busca ou listar)
+            // Mensagem se a lista estiver vazia (aplica-se a todos, busca ou listar)
             tableModel.addRow(new Object[]{"", "", "", "Nenhum feedback disponível ou encontrado.", ""});
         }
     }

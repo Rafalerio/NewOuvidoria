@@ -28,18 +28,14 @@ public class Gerenciador {
 
     /**
      * Busca um feedback pelo seu ID no banco de dados.
-     * @param id O ID do feedback a ser buscado.
      * @return O objeto Feedback encontrado, ou null se não for encontrado.
      */
     public Feedback buscarFeedbackPorId(int id) {
         return feedbackDAO.buscarFeedbackPorId(id);
     }
 
-    /**
-     * Atualiza o texto de um feedback existente no banco de dados.
-     * @param id O ID do feedback a ser atualizado.
-     * @param novoTexto O novo texto do feedback.
-     */
+    // Atualiza o texto de um feedback existente no banco de dados.
+
     public void atualizarFeedback(int id, String novoTexto) {
         // O DAO retorna true/false indicando sucesso
         boolean sucesso = feedbackDAO.atualizarFeedback(id, novoTexto);
@@ -51,10 +47,9 @@ public class Gerenciador {
     }
 
 
-    /**
-     * Deleta um feedback do banco de dados.
-     * @param id O ID do feedback a ser deletado.
-     */
+
+    // Deleta um feedback do banco de dados.
+
     public void deletarFeedback(int id) {
         // O DAO retorna true/false indicando sucesso
         boolean sucesso = feedbackDAO.deletarFeedback(id);
@@ -71,10 +66,8 @@ public class Gerenciador {
         return feedbackDAO.listarFeedbacksPorCriterio(termoBusca);
     }
 
-    /**
-     * Exporta todos os feedbacks (obtidos do banco de dados) para um arquivo de texto.
-     * @param nomeArquivo O nome do arquivo para o qual os feedbacks serão exportados.
-     */
+     // Exporta todos os feedbacks (obtidos do banco de dados) para um arquivo de texto.
+
     public void exportarFeedbackParaArquivo(String nomeArquivo) throws IOException {
         List<Feedback> feedbacks = feedbackDAO.listarTodosFeedbacks(); // Obtém os feedbacks do DB em ordem inversa
 

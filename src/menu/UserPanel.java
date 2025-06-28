@@ -7,9 +7,9 @@ import java.awt.*;
 import java.util.List;
 import java.time.format.DateTimeFormatter;
 
-/**
- * Painel para a interface de usuário logado.
- */
+
+ // Painel para a interface de usuário logado.
+
 public class UserPanel extends JPanel {
 
     private SistemaFeedback mainFrame; // Referência para o JFrame principal
@@ -34,7 +34,7 @@ public class UserPanel extends JPanel {
         welcomeLabel.setHorizontalAlignment(SwingConstants.CENTER);
         add(welcomeLabel, BorderLayout.NORTH);
 
-        // --- Painel de Envio de Feedback ---
+        // Painel de Envio de Feedback
         JPanel sendPanel = new JPanel(new BorderLayout(5, 5));
         sendPanel.setBorder(BorderFactory.createTitledBorder("Enviar Novo Feedback"));
         feedbackTextArea = new JTextArea(5, 30);
@@ -56,7 +56,7 @@ public class UserPanel extends JPanel {
         });
         sendPanel.add(sendButton, BorderLayout.SOUTH);
 
-        // --- Painel de Visualização e Ações de Feedback ---
+        // Painel de Visualização e Ações de Feedback
         JPanel viewActionsPanel = new JPanel(new BorderLayout(5, 5));
         viewActionsPanel.setBorder(BorderFactory.createTitledBorder("Meus Feedbacks"));
 
@@ -177,23 +177,18 @@ public class UserPanel extends JPanel {
             }
         });
 
-        // --- Organizar Painéis no UserPanel ---
+        // Organizar Painéis no UserPanel
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, sendPanel, viewActionsPanel);
         splitPane.setResizeWeight(0.3); // sendPanel ocupa 30% da altura inicial
         add(splitPane, BorderLayout.CENTER);
     }
 
-    /**
-     * Define a mensagem de boas-vindas.
-     * @param message A mensagem a ser exibida.
-     */
     public void setWelcomeMessage(String message) {
         welcomeLabel.setText(message);
     }
 
-    /**
-     * Carrega e exibe os feedbacks do usuário logado na tabela.
-     */
+     // Carrega e exibe os feedbacks do usuário logado na tabela
+
     public void loadUserFeedbacks() {
         tableModel.setRowCount(0); // Limpa a tabela
         singleFeedbackDisplayArea.setText(""); // Limpa a área de feedback único

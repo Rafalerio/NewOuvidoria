@@ -18,8 +18,8 @@ public class FeedbackDAO {
     /**
      * Salva um novo feedback no banco de dados.
      * O ID será gerado automaticamente pelo banco.
-     * @param feedback O objeto Feedback a ser salvo.
      */
+
     public void salvarFeedback(Feedback feedback) {
         String sql = "INSERT INTO FEEDBACKS (nome_usuario, departamento_usuario, texto_feedback, data_hora) VALUES (?, ?, ?, ?)";
         Connection conn = null;
@@ -64,6 +64,7 @@ public class FeedbackDAO {
      * Lista todos os feedbacks do banco de dados em ordem cronológica inversa (mais recente primeiro).
      * @return Uma lista de objetos Feedback.
      */
+
     public List<Feedback> listarTodosFeedbacks() {
         String sql = "SELECT id, nome_usuario, departamento_usuario, texto_feedback, data_hora FROM FEEDBACKS ORDER BY data_hora DESC";
         List<Feedback> feedbacks = new ArrayList<>();
@@ -101,11 +102,9 @@ public class FeedbackDAO {
         return feedbacks;
     }
 
-    /**
-     * Busca um feedback pelo seu ID no banco de dados.
-     * @param id O ID do feedback a ser buscado.
-     * @return O objeto Feedback encontrado, ou null se não for encontrado.
-     */
+
+    // Busca um feedback pelo seu ID no banco de dados.
+
     public Feedback buscarFeedbackPorId(int id) {
         String sql = "SELECT id, nome_usuario, departamento_usuario, texto_feedback, data_hora FROM FEEDBACKS WHERE id = ?";
         Connection conn = null;
@@ -143,8 +142,8 @@ public class FeedbackDAO {
     /**
      * Atualiza o texto de um feedback existente no banco de dados.
      * @param novoTexto O novo texto do feedback.
-     * @return true se a atualização foi bem sucedida, false caso contrário.
      */
+
     public boolean atualizarFeedback(int id, String novoTexto) {
         String sql = "UPDATE FEEDBACKS SET texto_feedback = ? WHERE id = ?";
         Connection conn = null;
@@ -172,10 +171,9 @@ public class FeedbackDAO {
         }
     }
 
-    /**
-     * Deleta um feedback do banco de dados.
-     * @return true se a exclusão foi bem-sucedida, false caso contrário.
-     */
+
+    // Deleta um feedback do banco de dados.
+
     public boolean deletarFeedback(int id) {
         String sql = "DELETE FROM FEEDBACKS WHERE id = ?";
         Connection conn = null;
@@ -205,8 +203,6 @@ public class FeedbackDAO {
     /**
      * Lista feedbacks do banco de dados com base em um termo de busca,
      * pesquisando nos campos nome_usuario, departamento_usuario e texto_feedback.
-     * A busca não diferencia maiúsculas de minúsculas.
-     * @param termoBusca O termo a ser pesquisado.
      * @return Uma lista de objetos Feedback que correspondem ao termo, ordenada por data.
      */
 

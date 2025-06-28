@@ -14,7 +14,7 @@ import java.sql.SQLException;
 public class UsuarioDAO {
 
     /**
-     * Método de inserção de dados para cadastrar um novo usuário.
+     * Metodo de inserção de dados para cadastrar um novo usuário.
      */
     public void cadastrarUsuario(Usuario usuario) {
         // Ajuste no SQL: o campo EMAIL e FUNCAO estavam trocados nas posições (3 e 4)
@@ -78,7 +78,7 @@ public class UsuarioDAO {
     }
 
     /**
-     * Realiza o login de um usuário comum.
+     * Realiza o login de um usuário.
      * @param usuario Objeto Usuario contendo login e senha para autenticação.
      * @return O objeto Usuario completo se o login for bem-sucedido, null caso contrário.
      */

@@ -45,7 +45,7 @@ public class SistemaFeedback extends JFrame {
         conexao = Conexao.getConexao();
         if (conexao == null) {
             JOptionPane.showMessageDialog(this,
-                    "Falha ao conectar ao banco de dados. Verifique o servidor MySQL e as credenciais.",
+                    "Falha ao conectar ao banco de dados.",
                     "Erro de Conexão", JOptionPane.ERROR_MESSAGE);
             System.exit(1); // Encerra a aplicação se não houver conexão
             return;
@@ -79,7 +79,6 @@ public class SistemaFeedback extends JFrame {
     public void showPanel(String panelName) {
         CardLayout cl = (CardLayout)(cards.getLayout());
         cl.show(cards, panelName);
-        // Ao mostrar um painel, pode ser necessário inicializar ou carregar dados específicos
         if (panelName.equals(USER_PANEL)) {
             userPanel.loadUserFeedbacks(); // Carrega feedbacks do usuário ao entrar no painel
         } else if (panelName.equals(ADMIN_PANEL)) {
@@ -89,8 +88,6 @@ public class SistemaFeedback extends JFrame {
 
     /**
      * Tenta realizar o login de um usuário.
-     * @param login O nome de usuário.
-     * @param senha A senha.
      * @return true se o login for bem-sucedido, false caso contrário.
      */
     public boolean loginUsuario(String login, String senha) {
@@ -118,7 +115,7 @@ public class SistemaFeedback extends JFrame {
      * @return true se o login for bem-sucedido, false caso contrário.
      */
     public boolean loginAdmin(String login, String senha) {
-        // Credenciais fixas do administrador (como no SistemaFeedback original)
+        // Credenciais fixas do administrador
         String ADMIN_LOGIN = "admin123";
         String ADMIN_SENHA = "admin321";
 
@@ -247,7 +244,7 @@ public class SistemaFeedback extends JFrame {
     }
 
     public entity.Feedback buscarFeedbackAdminPorId(int id) {
-        return gerenciador.buscarFeedbackPorId(id); // Busca diretamente do DB
+        return gerenciador.buscarFeedbackPorId(id); // Busca diretamente do banco de dados
     }
 
     public void deletarFeedbackAdmin(int id) {

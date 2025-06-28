@@ -32,7 +32,7 @@ public class Feedback {
     public String getTextoFeedback() { return textoFeedback; }
     public LocalDateTime getDataHora() { return dataHora; }
 
-    // --- Setter para o ID ---
+    // Setter para o ID
     public void setId(int id) {
         this.id = id;
     }

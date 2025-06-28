@@ -5,9 +5,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-/**
- * Painel para a interface de Login do Administrador.
- */
+
+ // Painel para a interface de Login do Administrador.
+
 public class AdminLoginPanel extends JPanel {
 
     private SistemaFeedback mainFrame; // Referência para o JFrame principal
