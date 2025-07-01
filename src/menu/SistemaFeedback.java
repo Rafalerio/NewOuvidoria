@@ -28,10 +28,9 @@ public class SistemaFeedback extends JFrame {
     public static final String USER_PANEL = "Usuario";
     public static final String ADMIN_PANEL = "Administrador";
 
-    // Painéis que serão trocados
     private MenuInicialPanel menuInicialPanel;
-    private ColaboradoresPanel colaboradoresPanel; // Renomeado
-    private AdminLoginPanel adminLoginPanel;      // Novo
+    private ColaboradoresPanel colaboradoresPanel; 
+    private AdminLoginPanel adminLoginPanel;     
     private UserPanel userPanel;
     private AdminPanel adminPanel;
 
@@ -56,9 +55,9 @@ public class SistemaFeedback extends JFrame {
         // Inicializa os painéis
         menuInicialPanel = new MenuInicialPanel(this);
         colaboradoresPanel = new ColaboradoresPanel(this); // Passa a referência da JFrame
-        adminLoginPanel = new AdminLoginPanel(this);        // Novo painel de login admin
+        adminLoginPanel = new AdminLoginPanel(this);       
         userPanel = new UserPanel(this);                   // Passa a referência da JFrame
-        adminPanel = new AdminPanel(this);                 // Passa a referência da JFrame
+        adminPanel = new AdminPanel(this);                
 
         // Adiciona os painéis ao CardLayout
         cards.add(menuInicialPanel, INITIAL_MENU_PANEL);
@@ -110,8 +109,6 @@ public class SistemaFeedback extends JFrame {
 
     /**
      * Tenta realizar o login de um administrador.
-     * @param login O nome de usuário do administrador.
-     * @param senha A senha do administrador.
      * @return true se o login for bem-sucedido, false caso contrário.
      */
     public boolean loginAdmin(String login, String senha) {
