@@ -8,7 +8,7 @@ import java.awt.event.ActionListener;
 
  // Painel para a interface de Login e Cadastro de Usuário (Colaboradores).
 
-public class ColaboradoresPanel extends JPanel { // Renomeado de LoginPanel
+public class ColaboradoresPanel extends JPanel {
 
     private SistemaFeedback mainFrame; // Referência para o JFrame principal
     private JTextField loginField;
