@@ -7,9 +7,9 @@ import java.sql.SQLException;
  // Conexao do banco de dados
 
 public class Conexao {
-    private static final String url = "jdbc:mysql://newouvidoria-newouvidoria.i.aivencloud.com:11148/defaultdb?sslmode=require";
-    private static final String user = "avnadmin";
-    private static final String password = "AVNS_LRSAvfS2-A22nj_9m_h";
+    private static final String url = "";
+    private static final String user = "";
+    private static final String password = "";
 
     private static Connection con;
 
